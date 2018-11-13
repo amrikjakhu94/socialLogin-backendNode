@@ -147,7 +147,7 @@ router.post('/forgotpassword',(req,res)=>{
     let email = req.body.email;
     const activationNumber = Math.floor(( Math.random() * 484216) + 54 );
     User.findOne({email : email }).then(
-        user=>{
+        (user)=>{
             if(user){
                 User.findOneAndUpdate({ _id : user._id },{ $set : { activation : activationNumber } }).then(
                     setActivationNumber=>{
@@ -169,10 +169,10 @@ router.post('/forgotpassword',(req,res)=>{
                         };
                         transporter.sendMail(mailOptions, function(error, info){
                             if (error) {
-                            console.log(error);
-                            console.log('Email not sent...error');
+                                console.log(error);
+                                console.log('Email not sent...error');
                             } else {
-                            console.log('Email sent: ' + info.response);
+                                console.log('Email sent: ' + info.response);
                             }
                         });
 
@@ -184,15 +184,17 @@ router.post('/forgotpassword',(req,res)=>{
                 res.status(404).json({ Error : 'user not found' })
             }
         }
-    ).catch()
+    ).catch((err) => {
+        console.error("Error occured ",+err);
+    })
 });
 
 router.get('/setnewpassword',(req,res)=>{
     //console.log(req.query);
     let email = req.query.email;
     let activationNumber = req.query.id;
-    User.findOne({$and : [{email : email, activation : activationNumber }]}).then(
-        user=>{
+    User.findOne({email : email, activation : activationNumber}).then(
+        (user)=>{
             if(user){
                 res.status(200).json({ set : "new password now..." });
             }
@@ -200,7 +202,9 @@ router.get('/setnewpassword',(req,res)=>{
                 res.status(401).json({unauthorization : 'access.'});
             }
         }
-    ).catch()
+    ).catch((err) => {
+        console.error("Error occured ",+err);
+    })
 });
 
 module.exports = router;
