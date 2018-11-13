@@ -94,13 +94,15 @@ router.get('/verify',(req,res)=>{
                     if(verfied){
                         //let link = 'http://localhost:3000';
                         let link = 'https://stormy-ravine-20860.herokuapp.com/';
-                        return res.send('Account verfied...Now you can login to your account.');
+                        return res.status(200).send('Account verfied...Now you can login to your account.');
                     }
                     else{
-                        res.send('Error in account verification.')
+                        res.status(404).json({ error : 'in account verification.' })
                     }
                 }
-            )
+            ).catch((err) => {
+                console.error("Error occured in account verification ",+err);
+            })
         }
     ).catch()
 });
@@ -189,7 +191,7 @@ router.get('/setnewpassword',(req,res)=>{
     //console.log(req.query);
     let email = req.query.email;
     let activationNumber = req.query.id;
-    User.findOne({email : email, activation : activationNumber }).then(
+    User.findOne({$and : [{email : email, activation : activationNumber }]}).then(
         user=>{
             if(user){
                 res.status(200).json({ set : "new password now..." });
