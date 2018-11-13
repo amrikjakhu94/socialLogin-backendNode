@@ -5,7 +5,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const indexRoute = require('./routes')
 
-mongoose.connect('mongodb://localhost:27017/socialLogin')
+mongoose.connect('mongodb://sociallogin-amrik:asd9876543210@ds063859.mlab.com:63859/sociallogin-backend')
+// mongoose.connect('mongodb://localhost:27017/socialLogin')
     .then(()=>{
         console.log('Connected to mongoDB')
     }).catch(err => console.error('Could not connect',err));
@@ -16,7 +17,8 @@ app.use(bodyParser.json());
 
 app.use(indexRoute);
 
-const port = 3000;
+//const port = 3000; //For using it in local system...
+const port = process.env.PORT || 3000;
 app.listen(port, ()=>{
     console.log(`App started at port ${port}`);
 });
