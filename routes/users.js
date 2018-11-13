@@ -86,8 +86,8 @@ router.post('/signup',(req,res)=>{
 router.get('/verify',(req,res)=>{
     //console.log(req.query);
     let email = req.query.email;
-    let activationNumber = req.query.activationNumber;
-    User.findOne({email : email, activation : activationNumber }).then(
+    let activationNumber = req.query.id;
+    User.findOne({ $and : [{email : email, activation : activationNumber }] }).then(
         user=>{
             User.findOneAndUpdate({ email : email },{ $set : { isverified : true } }).then(
                 verfied=>{
