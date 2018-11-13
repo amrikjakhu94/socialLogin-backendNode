@@ -188,7 +188,7 @@ router.post('/forgotpassword',(req,res)=>{
 router.get('/setnewpassword',(req,res)=>{
     //console.log(req.query);
     let email = req.query.email;
-    let activationNumber = req.query.activationNumber;
+    let activationNumber = req.query.id;
     User.findOne({email : email, activation : activationNumber }).then(
         user=>{
             if(user){
