@@ -196,10 +196,10 @@ router.get('/setnewpassword',(req,res)=>{
     User.findOne({email : email, activation : activationNumber}).then(
         (user)=>{
             if(user){
-                res.status(200).json({ set : "new password now..." });
+                return res.status(200).json({ set : "new password now..." });
             }
             else{
-                res.status(401).json({unauthorization : 'access.'});
+                return res.status(401).json({unauthorization : 'access.'});
             }
         }
     ).catch((err) => {
