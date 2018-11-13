@@ -50,15 +50,15 @@ router.post('/signup',(req,res)=>{
             activation : activationNumber
         });
         newUser.save().then(()=>{
-        
-        let link = `http://localhost:3000/verify?id=${activationNumber}&email=${email}`;
+        //let link = `http://localhost:3000/verify?id=${activationNumber}&email=${email}`;
+        let link = `https://stormy-ravine-20860.herokuapp.com/verify?id=${activationNumber}&email=${email}`;
 
         //  NodeMailer : To send email
         var transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
               user: 'idiotfriends04@gmail.com',
-              pass: ''
+              pass: 'aj16112111'
             }
           });
           var mailOptions = {
@@ -92,7 +92,8 @@ router.get('/verify',(req,res)=>{
             User.findOneAndUpdate({ email : email },{ $set : { isverified : true } }).then(
                 verfied=>{
                     if(verfied){
-                        let link = 'http://localhost:3000';
+                        //let link = 'http://localhost:3000';
+                        let link = 'https://stormy-ravine-20860.herokuapp.com/';
                         return res.send('Account verfied...Now you can login to your account.');
                     }
                     else{
@@ -155,7 +156,7 @@ router.post('/forgotpassword',(req,res)=>{
                             service: 'gmail',
                             auth: {
                             user: 'idiotfriends04@gmail.com',
-                            pass: ''
+                            pass: 'aj16112111'
                             }
                         });
                         var mailOptions = {
