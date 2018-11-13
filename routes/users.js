@@ -129,12 +129,12 @@ router.post('/signin',(req,res)=>{
                             }
                        }
                        else{
-                           res.status(401).json({ Message : 'Authentication failed. Invalid Password.'});
+                           res.status(401).json({ error : 'Authentication failed. Invalid Password.'});
                        }
                     });
                 }
                 else{
-                    return res.status(401).json({ Message : 'Authentication failed. User not found.' });
+                    return res.status(401).json({ error : 'Authentication failed. User not found.' });
                 }
             }
         ).catch((err) => {
