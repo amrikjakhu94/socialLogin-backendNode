@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const indexRoute = require('./routes')
 
 mongoose.connect('mongodb://sociallogin-amrik:asd9876543210@ds063859.mlab.com:63859/sociallogin-backend')
-// mongoose.connect('mongodb://localhost:27017/socialLogin')
+// mongoose.connect('mongodb://localhost:27017/socialLogin') //For using it in local system...
     .then(()=>{
         console.log('Connected to mongoDB')
     }).catch(err => console.error('Could not connect',err));

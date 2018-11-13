@@ -26,7 +26,7 @@ router.post('/signup',(req,res)=>{
     User.findOne({email : email}).then(
         (user) => {
             if(user){
-                return res.json({ User : 'already exits' });
+                return resstatus(400).json({ User : 'already exits' });
             }
             else{
                 createNewUser();
@@ -77,7 +77,7 @@ router.post('/signup',(req,res)=>{
           });
 
 
-        return res.json( { User : ' created'} );
+        return res.status(200).json( { User : ' created'} );
     });
     }
 
