@@ -181,7 +181,7 @@ router.post('/forgotpassword',(req,res)=>{
                 )
             }
             else{
-                res.status(404).json({ error : 'User not found' })
+                res.status(404).json({ error : 'Email not sent,user not found' })
             }
         }
     ).catch((err) => {
