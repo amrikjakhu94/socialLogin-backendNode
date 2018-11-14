@@ -125,7 +125,7 @@ router.post('/signin',(req,res)=>{
                                 res.header('x-auth-token',token).json({ user : user, token : token });
                             }
                             else{
-                                res.status(401).json({ auth : 'Account not verified.Check your email to verify your account' })
+                                res.status(401).json({ error : 'Account not verified.Check your email to verify your account' })
                             }
                        }
                        else{
