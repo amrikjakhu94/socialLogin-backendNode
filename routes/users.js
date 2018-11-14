@@ -26,7 +26,7 @@ router.post('/signup',(req,res)=>{
     User.findOne({email : email}).then(
         (user) => {
             if(user){
-                return res.status(400).json({ User : 'already exits' });
+                return res.status(400).json({ error : 'User already exits.Try new email.' });
             }
             else{
                 createNewUser();
@@ -77,7 +77,7 @@ router.post('/signup',(req,res)=>{
           });
 
 
-        return res.status(200).json( { User : ' created'} );
+        return res.status(200).json( { success : 'New user created successfully.'} );
     });
     }
 
@@ -176,12 +176,12 @@ router.post('/forgotpassword',(req,res)=>{
                             }
                         });
 
-                        return res.status(200).json({sent : 'New password email sent...Click on the link in your email to set new password.'});
+                        return res.status(200).json({success : 'New password email sent...Click on the link in your email to set new password.'});
                     }
                 )
             }
             else{
-                res.status(404).json({ Error : 'user not found' })
+                res.status(404).json({ error : 'User not found' })
             }
         }
     ).catch((err) => {
@@ -196,10 +196,10 @@ router.get('/setnewpassword',(req,res)=>{
     User.findOne({email : email, activation : activationNumber}).then(
         (user)=>{
             if(user){
-                return res.status(200).json({ set : "new password now..." });
+                return res.status(200).json({ success : "Set new password now..." });
             }
             else{
-                return res.status(401).json({unauthorization : 'access.'});
+                return res.status(401).json({ error : 'Unauthorized access.'});
             }
         }
     ).catch((err) => {
