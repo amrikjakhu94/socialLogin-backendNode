@@ -58,7 +58,7 @@ router.post('/signup',(req,res)=>{
             service: 'gmail',
             auth: {
               user: 'idiotfriends04@gmail.com',
-              pass: 'aj16112111'
+              pass: ''
             }
           });
           var mailOptions = {
@@ -111,9 +111,9 @@ router.post('/signin',(req,res)=>{
     let email = req.body.email;
     let password = req.body.password;
     if(!email)
-        return res.status(422).json({Errors: {Email: "can't be blank"}});
+        return res.status(422).json({ error : 'Email cannot be blank.' });
     if(!password)
-        return res.status(422).json({Errors: {Password: "can't be blank"}});
+        return res.status(422).json({ error : 'Password cannot be blank.' });
     else{
         User.findOne({email : email}).then(
             (user)=>{
