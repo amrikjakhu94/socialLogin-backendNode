@@ -17,7 +17,7 @@ const userSchema = Schema({
     },
     image : {
         type : String,
-        default : ''
+        default : 'http://conferenceoeh.com/wp-content/uploads/profile-pic-dummy.png'
     },
     salt : {
         type : String

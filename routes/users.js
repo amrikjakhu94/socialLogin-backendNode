@@ -4,19 +4,20 @@ let User = require('../models/User');
 let bcrypt = require('bcrypt');
 let jwt = require('jsonwebtoken');
 var nodemailer = require('nodemailer');
+let auth = require('../middleware/auth')
+let aws = require('aws-sdk');
+let s3 = require('aws-sdk/clients/s3');
 
-// router.post('/signin',(req,res)=>{
-//     console.log(req.body,' request body...');
-//     return res.status(200).json(req.body);
-// });
-
-// router.post('/signup',(req,res)=>{
-//     let email = req.body.email;
-//     let password = req.body.password;
-//     console.log(req.body,' request body...');
-//     //User.findOne()
-//     return res.status(200).json(req.body);
-// });
+router.get('/myprofile',auth,(req,res)=>{
+    let loggedInUser = req.user._id;
+    User.findById(loggedInUser).then(
+        (user)=>{
+            if(user){
+                return res.status(200).json(user);
+            }
+        }
+    )
+});
 
 router.post('/signup',(req,res)=>{
     let name = req.body.name;
@@ -68,16 +69,16 @@ router.post('/signup',(req,res)=>{
             html: "Hello,<br> Please Click on the link to verify your email.<br><a href=" + link + ">Click here to verify your account.</a>"
           };
           transporter.sendMail(mailOptions, function(error, info){
-            if (error) {
-              console.log(error);
-              console.log('Email not sent...error');
-            } else {
-              console.log('Email sent: ' + info.response);
+            if(error){
+                console.log(error);
+                console.log('Email not sent...error');
+            }
+            else{
+                console.log('Email sent: ' + info.response);
             }
           });
 
-
-        return res.status(200).json( { success : 'New user created successfully.'} );
+        return res.status(200).json( { success : 'New user created successfully.Click on the link in email to verify your account.'} );
     });
     }
 
@@ -97,7 +98,7 @@ router.get('/verify',(req,res)=>{
                         return res.status(200).send('Account verfied...Now you can login to your account.');
                     }
                     else{
-                        res.status(404).json({ error : 'in account verification.' })
+                        return res.status(404).json({ error : 'Error in account verification.' })
                     }
                 }
             ).catch((err) => {
@@ -118,20 +119,45 @@ router.post('/signin',(req,res)=>{
         User.findOne({email : email}).then(
             (user)=>{
                 if(user){
-                    bcrypt.compare(password, user.hash, (err, result)=> {
-                        if(result){
-                            if(user.isverified){
-                                const token = user.generateAuthToken();
-                                res.header('x-auth-token',token).json({ user : user, token : token });
+                    if(user.provider == 'airtime'){
+                        bcrypt.compare(password, user.hash, (err, result)=> {
+                            if(result){
+                                if(user.isverified){
+                                    const token = user.generateAuthToken();
+                                    return res.header('x-auth-token',token).json({ user : user, token : token });
+                                }
+                                else{
+                                    return res.status(401).json({ error : 'Account not verified.Check your email to verify your account' })
+                                }
                             }
                             else{
-                                res.status(401).json({ error : 'Account not verified.Check your email to verify your account' })
+                                return res.status(401).json({ error : 'Authentication failed. Invalid Password.'});
                             }
-                       }
-                       else{
-                           res.status(401).json({ error : 'Authentication failed. Invalid Password.'});
-                       }
-                    });
+                        });
+                    }
+                    if(user.provider == 'google'){
+                        // console.log(user,'google');
+                        if(user.hash == null){
+                            console.log(req.body);
+                            console.log('No password found');
+                        }
+                        else{
+                            bcrypt.compare(password, user.hash, (err, result)=> {
+                                if(result){
+                                    if(user.isverified){
+                                        const token = user.generateAuthToken();
+                                        return res.header('x-auth-token',token).json({ user : user, token : token });
+                                    }
+                                    else{
+                                        return res.status(401).json({ error : 'Account not verified.Check your email to verify your account' })
+                                    }
+                                }
+                                else{
+                                    return res.status(401).json({ error : 'Authentication failed. Invalid Password.'});
+                                }
+                            });
+                        }
+                    }
                 }
                 else{
                     return res.status(401).json({ error : 'Authentication failed. User not found.' });
@@ -140,6 +166,57 @@ router.post('/signin',(req,res)=>{
         ).catch((err) => {
             console.error("Error occured ",+err);
         })
+    }
+});
+
+router.post('/socialsignin',(req,res)=>{
+    let name = req.body.name;
+    let email = req.body.email;
+    let image = req.body.image;
+    let provider = req.body.provider;
+    if(!email){
+        return res.status(422).json({ error : 'Email cannot be blank.' });
+    }
+    else{
+        User.findOne({ email : email }).then(
+            (user)=>{
+                if(user){
+                    const token = user.generateAuthToken();
+                    return res.header('x-auth-token',token).json({ user : user, token : token });
+                }
+                else{
+                    createNewUser();
+                }
+            }
+        ).catch((err) => {
+            console.error("Error occured ",+err);
+        })
+    }
+
+    async function createNewUser() {
+        // const salt = await bcrypt.genSalt(10);
+        // const hashed = await bcrypt.hash(password,salt);
+
+        // const activationNumber = Math.floor(( Math.random() * 546795) + 54 );
+
+        const newUser = new User({
+            name : name,
+            email : email,
+            image : image,
+            provider : provider,
+            isverified : true
+            // salt : salt,
+            // hash : hashed,
+            // activation : activationNumber
+        });
+        newUser.save().then(
+            (newuser)=>{
+                // let link = `http://localhost:3000/verify?id=${activationNumber}&email=${email}`;
+                // let link = `https://stormy-ravine-20860.herokuapp.com/verify?id=${activationNumber}&email=${email}`;
+                const token = newuser.generateAuthToken();
+                return res.header('x-auth-token',token).json({ user : newuser, token : token });
+                // return res.status(200).json( { success : 'New user created successfully.'} );
+        });
     }
 });
 
@@ -181,7 +258,7 @@ router.post('/forgotpassword',(req,res)=>{
                 )
             }
             else{
-                res.status(404).json({ error : 'Email not sent,user not found' })
+                return res.status(404).json({ error : 'Email not sent,user not found' })
             }
         }
     ).catch((err) => {
@@ -189,10 +266,10 @@ router.post('/forgotpassword',(req,res)=>{
     })
 });
 
-router.get('/setnewpassword',(req,res)=>{
+router.post('/setnewpassword',(req,res)=>{
     //console.log(req.query);
-    let email = req.query.email;
-    let activationNumber = req.query.id;
+    let email = req.body.email;
+    let activationNumber = req.body.id;
     User.findOne({email : email, activation : activationNumber}).then(
         (user)=>{
             if(user){
@@ -205,6 +282,32 @@ router.get('/setnewpassword',(req,res)=>{
     ).catch((err) => {
         console.error("Error occured ",+err);
     })
+});
+
+router.post('/postsetnewpassword',(req,res)=>{
+    let email = req.body.email;
+    let password = req.body.password;
+    signUserIn();
+    
+    async function signUserIn(){
+        const salt = await bcrypt.genSalt(10);
+        const hashed = await bcrypt.hash(password,salt);
+    
+        User.findOneAndUpdate({ email : email },{ $set : { salt : salt , hash : hashed } }).then(
+            (user)=>{
+                if(user){
+                    // return res.status(200).json({ success : "Set new password now..." });
+                    const token = user.generateAuthToken();
+                    return res.header('x-auth-token',token).json({ user : user, token : token });
+                }
+                else{
+                    return res.status(401).json({ error : 'Unauthorized access.'});
+                }
+            }
+        ).catch((err) => {
+            console.error("Error occured ",+err);
+        })
+    }
 });
 
 module.exports = router;
