@@ -27,7 +27,7 @@ const userSchema = Schema({
     },
     provider : {
         type : String,
-        default : 'Airtime'
+        default : 'airtime'
     },
     activation : {
         type : Number,
