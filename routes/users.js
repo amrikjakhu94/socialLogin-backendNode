@@ -7,6 +7,18 @@ var nodemailer = require('nodemailer');
 let auth = require('../middleware/auth')
 let aws = require('aws-sdk');
 let s3 = require('aws-sdk/clients/s3');
+let multer = require('multer');
+let upload = multer({ dest: 'uploads/' });
+
+router.post('/postimage',auth,upload.single('image'),(req,res)=>{
+    console.log(req.file,'fileeee');
+    if(req.file) {
+        return res.status(200).json({ success: 'File received.' });
+    }
+    else{
+        return res.status(400).json({ error: 'No file received.' });
+    }
+});
 
 router.get('/myprofile',auth,(req,res)=>{
     let loggedInUser = req.user._id;
@@ -59,7 +71,7 @@ router.post('/signup',(req,res)=>{
             service: 'gmail',
             auth: {
               user: 'idiotfriends04@gmail.com',
-              pass: ''
+              pass: 'aj16112111'
             }
           });
           var mailOptions = {
@@ -235,7 +247,7 @@ router.post('/forgotpassword',(req,res)=>{
                             service: 'gmail',
                             auth: {
                             user: 'idiotfriends04@gmail.com',
-                            pass: ''
+                            pass: 'aj16112111'
                             }
                         });
                         var mailOptions = {
