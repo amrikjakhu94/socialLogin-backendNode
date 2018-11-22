@@ -5,6 +5,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const indexRoute = require('./routes')
 const morgan = require('morgan');
+const multer = require('multer');
+const path = require('path');
+const AWS = require('aws-sdk');
 
 // mongoose.connect('mongodb://sociallogin-amrik:asd9876543210@ds063859.mlab.com:63859/sociallogin-backend')
 mongoose.connect('mongodb://localhost:27017/socialLogin') //For using it in local system...
@@ -12,10 +15,10 @@ mongoose.connect('mongodb://localhost:27017/socialLogin') //For using it in loca
         console.log('Connected to mongoDB')
     }).catch(err => console.error('Could not connect',err));
 
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(morgan('dev'));
+// app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true,limit: '50mb',}));
 
 app.use(indexRoute);
 

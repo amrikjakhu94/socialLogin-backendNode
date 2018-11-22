@@ -5,10 +5,71 @@ let bcrypt = require('bcrypt');
 let jwt = require('jsonwebtoken');
 var nodemailer = require('nodemailer');
 let auth = require('../middleware/auth')
-let aws = require('aws-sdk');
+let AWS = require('aws-sdk');
 let s3 = require('aws-sdk/clients/s3');
 let multer = require('multer');
-let upload = multer({ dest: 'uploads/' });
+
+// let upload = multer({ dest: 'uploads/' });
+
+
+// ram's code
+let storage = multer.diskStorage({
+    destination: function(req, file, cb){
+        cb(null, './images_uploaded')
+    },
+    filename: function(req, file, cb){
+        cb(null, file.fieldname + '-'+ Date.now());
+    }
+})
+
+let upload = multer({storage: storage});
+const fs = require('fs');
+
+var bucket = "sociallogin-bucket";
+var s3Client = new AWS.S3({
+    accessKeyId: 'AKIAI4LVGH5CXBF46ABQ',
+    secretAccessKey: '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'
+})
+
+router.post('/upload', upload.single('image'), (req, res)=>{
+    // let loggedInUser = req.user._id;
+    console.log(req.file,'222222222');
+    // if(!req.file){
+    //     // console.log("No file received");
+    //     res.status(400).json({ error : 'No file received.' })
+    // }
+    // else{
+    //     // console.log("File received");
+    //     let pathname = 
+    //     s3Client.putObject({
+    //         Bucket: bucket,
+    //         Key: req.file.filename,
+    //         ACL: 'public-read',
+    //         Body: fs.readFileSync(req.file.path),
+    //         ContentLength: req.file.size,
+    //         ContentType: req.file.mimetype,
+    //     }, function(err, data){
+    //         if (err) {
+    //             return res.json({error: "Error while uploading image."});
+    //         }
+    //         let imageUrl = "https://s3.ap-south-1.amazonaws.com/"+bucket+"/"+req.file.filename;
+    //         // console.log("image url", imageUrl);
+    //         // let imageObj = { image : imageUrl };
+    //         // User.findByIdAndUpdate( loggedInUser, imageObj ).then(
+    //         //     uploaded=>{
+    //         //         return res.json({success: 'Image uploaded successfully', data: imageUrl });        
+    //         //     }
+    //         // )
+    //         return res.json({success: 'Image uploaded successfully', data: imageUrl });
+    //     })
+    // }
+});
+
+router.get('/upload', function(req, res, next){
+    console.log("helllllll");
+})
+// ram's code end
+
 
 router.post('/postimage',auth,upload.single('image'),(req,res)=>{
     console.log(req.file,'fileeee');
@@ -148,7 +209,7 @@ router.post('/signin',(req,res)=>{
                         });
                     }
                     if(user.provider == 'google'){
-                        return res.status(401).json({ error : "Your account is registered with Google.Try login using 'Login with Google' "});
+                        return res.status(401).json({ error : "Email registered with Google.Try using 'Login with Google' "});
                         // if(user.hash == null){
                         //     console.log(req.body);
                         //     console.log('No password found');
@@ -172,7 +233,7 @@ router.post('/signin',(req,res)=>{
                         // }
                     }
                     if(user.provider == 'facebook'){
-                        return res.status(401).json({ error : "Your account is registered with Facebook.Try login using 'Login with Facebook' "});
+                        return res.status(401).json({ error : "Email registered with Facebook.Try using 'Login with Facebook' "});
                     }
                 }
                 else{
