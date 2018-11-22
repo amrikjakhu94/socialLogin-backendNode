@@ -148,27 +148,31 @@ router.post('/signin',(req,res)=>{
                         });
                     }
                     if(user.provider == 'google'){
-                        // console.log(user,'google');
-                        if(user.hash == null){
-                            console.log(req.body);
-                            console.log('No password found');
-                        }
-                        else{
-                            bcrypt.compare(password, user.hash, (err, result)=> {
-                                if(result){
-                                    if(user.isverified){
-                                        const token = user.generateAuthToken();
-                                        return res.header('x-auth-token',token).json({ user : user, token : token });
-                                    }
-                                    else{
-                                        return res.status(401).json({ error : 'Account not verified.Check your email to verify your account' })
-                                    }
-                                }
-                                else{
-                                    return res.status(401).json({ error : 'Authentication failed. Invalid Password.'});
-                                }
-                            });
-                        }
+                        return res.status(401).json({ error : "Your account is registered with Google.Try login using 'Login with Google' "});
+                        // if(user.hash == null){
+                        //     console.log(req.body);
+                        //     console.log('No password found');
+                        //     res.status(400).send({ error : '<h1>GSDFSDFSFFSF<h1>'});
+                        // }
+                        // else{
+                        //     bcrypt.compare(password, user.hash, (err, result)=> {
+                        //         if(result){
+                        //             if(user.isverified){
+                        //                 const token = user.generateAuthToken();
+                        //                 return res.header('x-auth-token',token).json({ user : user, token : token });
+                        //             }
+                        //             else{
+                        //                 return res.status(401).json({ error : 'Account not verified.Check your email to verify your account' })
+                        //             }
+                        //         }
+                        //         else{
+                        //             return res.status(401).json({ error : 'Authentication failed. Invalid Password.'});
+                        //         }
+                        //     });
+                        // }
+                    }
+                    if(user.provider == 'facebook'){
+                        return res.status(401).json({ error : "Your account is registered with Facebook.Try login using 'Login with Facebook' "});
                     }
                 }
                 else{
@@ -206,10 +210,6 @@ router.post('/socialsignin',(req,res)=>{
     }
 
     async function createNewUser() {
-        // const salt = await bcrypt.genSalt(10);
-        // const hashed = await bcrypt.hash(password,salt);
-
-        // const activationNumber = Math.floor(( Math.random() * 546795) + 54 );
 
         const newUser = new User({
             name : name,
@@ -217,17 +217,11 @@ router.post('/socialsignin',(req,res)=>{
             image : image,
             provider : provider,
             isverified : true
-            // salt : salt,
-            // hash : hashed,
-            // activation : activationNumber
         });
         newUser.save().then(
             (newuser)=>{
-                // let link = `http://localhost:3000/verify?id=${activationNumber}&email=${email}`;
-                // let link = `https://stormy-ravine-20860.herokuapp.com/verify?id=${activationNumber}&email=${email}`;
                 const token = newuser.generateAuthToken();
                 return res.header('x-auth-token',token).json({ user : newuser, token : token });
-                // return res.status(200).json( { success : 'New user created successfully.'} );
         });
     }
 });
@@ -308,7 +302,6 @@ router.post('/postsetnewpassword',(req,res)=>{
         User.findOneAndUpdate({ email : email },{ $set : { salt : salt , hash : hashed } }).then(
             (user)=>{
                 if(user){
-                    // return res.status(200).json({ success : "Set new password now..." });
                     const token = user.generateAuthToken();
                     return res.header('x-auth-token',token).json({ user : user, token : token });
                 }
