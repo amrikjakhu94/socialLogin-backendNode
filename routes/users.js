@@ -8,66 +8,127 @@ let auth = require('../middleware/auth')
 let AWS = require('aws-sdk');
 let s3 = require('aws-sdk/clients/s3');
 let multer = require('multer');
-
+let users_controller = require('./users-controller');
+let sharp = require('sharp');
+let crypto = require('crypto');
 // let upload = multer({ dest: 'uploads/' });
+
+let upload = multer();
+
+// var bucket = "sociallogin-bucket";
+// var s3Client = new AWS.S3({
+//     accessKeyId: 'AKIAI4LVGH5CXBF46ABQ',
+//     secretAccessKey: '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'
+// })
+
+var bucket = "natsu-bucket";
+var s3Client = new AWS.S3({
+  accessKeyId: "AKIAIIHNMLU3IUNCY5OQ",
+  secretAccessKey: "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"
+});
+
+let cpUpload = upload.fields([{name:'amrik',maxCount:2}]);
+let sizes = ['thumbnail', 'small','medium'];
+
+router.post('/uploadfile99',cpUpload,(req,res)=>{
+    console.log('6666666');
+	if (!req.files) {
+	//   console.log("No file received");
+	  return res.send({success: false});
+  
+	} else {
+
+        console.log(req.files,'99999');
+        let userId = "121212121dfdfd";
+        req.files.amrik.forEach((item)=>{
+            s3Client.putObject({
+                Bucket: bucket,
+                Key: getRandomName(userId),
+                ACL: 'public-read',
+                Body: item,
+                ContentType: 'image/png',
+            }, function(err, data) {
+                if (err) {
+                    console.log('Error while uploading to S3');
+                    return res.status(400).json({ error : 'Error in uploaded' });
+                }
+                else{
+                    console.log("uploaded");
+                    return res.status(200).json({ success : 'Image uploaded' });
+                }
+            })
+        })
+        function getRandomName(originalName) {
+            return crypto.randomBytes(16).toString('hex') + originalName;
+          }
+        //
+
+        // return res.status(200).json({ success : 'File received.' })
+
+	}
+});
+
+
+
+router.post('/fileupload',users_controller.uploadImage);
 
 
 // ram's code
-let storage = multer.diskStorage({
-    destination: function(req, file, cb){
-        cb(null, './images_uploaded')
-    },
-    filename: function(req, file, cb){
-        cb(null, file.fieldname + '-'+ Date.now());
-    }
-})
+// let storage = multer.diskStorage({
+//     destination: function(req, file, cb){
+//         cb(null, './images_uploaded')
+//     },
+//     filename: function(req, file, cb){
+//         cb(null, file.fieldname + '-'+ Date.now());
+//     }
+// })
 
-let upload = multer({storage: storage});
-const fs = require('fs');
+// //let upload = multer({storage: storage});
+// const fs = require('fs');
 
-var bucket = "sociallogin-bucket";
-var s3Client = new AWS.S3({
-    accessKeyId: 'AKIAI4LVGH5CXBF46ABQ',
-    secretAccessKey: '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'
-})
+// var bucket = "sociallogin-bucket";
+// var s3Client = new AWS.S3({
+//     accessKeyId: 'AKIAI4LVGH5CXBF46ABQ',
+//     secretAccessKey: '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'
+// })
 
-router.post('/upload', upload.single('image'), (req, res)=>{
-    // let loggedInUser = req.user._id;
-    console.log(req.file,'222222222');
-    // if(!req.file){
-    //     // console.log("No file received");
-    //     res.status(400).json({ error : 'No file received.' })
-    // }
-    // else{
-    //     // console.log("File received");
-    //     let pathname = 
-    //     s3Client.putObject({
-    //         Bucket: bucket,
-    //         Key: req.file.filename,
-    //         ACL: 'public-read',
-    //         Body: fs.readFileSync(req.file.path),
-    //         ContentLength: req.file.size,
-    //         ContentType: req.file.mimetype,
-    //     }, function(err, data){
-    //         if (err) {
-    //             return res.json({error: "Error while uploading image."});
-    //         }
-    //         let imageUrl = "https://s3.ap-south-1.amazonaws.com/"+bucket+"/"+req.file.filename;
-    //         // console.log("image url", imageUrl);
-    //         // let imageObj = { image : imageUrl };
-    //         // User.findByIdAndUpdate( loggedInUser, imageObj ).then(
-    //         //     uploaded=>{
-    //         //         return res.json({success: 'Image uploaded successfully', data: imageUrl });        
-    //         //     }
-    //         // )
-    //         return res.json({success: 'Image uploaded successfully', data: imageUrl });
-    //     })
-    // }
-});
+// router.post('/upload', upload.single('image'), (req, res)=>{
+//     // let loggedInUser = req.user._id;
+//     console.log(req.file,'222222222');
+//     if(!req.file){
+//         // console.log("No file received");
+//         res.status(400).json({ error : 'No file received.' })
+//     }
+//     else{
+//         // console.log("File received");
+//         let pathname = 
+//         s3Client.putObject({
+//             Bucket: bucket,
+//             Key: req.file.filename,
+//             ACL: 'public-read',
+//             Body: fs.readFileSync(req.file.path),
+//             ContentLength: req.file.size,
+//             ContentType: req.file.mimetype,
+//         }, function(err, data){
+//             if (err) {
+//                 return res.json({error: "Error while uploading image."});
+//             }
+//             let imageUrl = "https://s3.ap-south-1.amazonaws.com/"+bucket+"/"+req.file.filename;
+//             // console.log("image url", imageUrl);
+//             // let imageObj = { image : imageUrl };
+//             // User.findByIdAndUpdate( loggedInUser, imageObj ).then(
+//             //     uploaded=>{
+//             //         return res.json({success: 'Image uploaded successfully', data: imageUrl });        
+//             //     }
+//             // )
+//             return res.json({success: 'Image uploaded successfully', data: imageUrl });
+//         })
+//     }
+// });
 
-router.get('/upload', function(req, res, next){
-    console.log("helllllll");
-})
+// router.get('/upload', function(req, res, next){
+//     console.log("helllllll");
+// })
 // ram's code end
 
 

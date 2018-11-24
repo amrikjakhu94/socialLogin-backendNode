@@ -17,8 +17,9 @@ mongoose.connect('mongodb://localhost:27017/socialLogin') //For using it in loca
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
-// app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true,limit: '50mb',}));
+
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({extended: true,limit: '50mb',parameterLimit: 50000}));
 
 app.use(indexRoute);
 
