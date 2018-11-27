@@ -13,122 +13,155 @@ let sharp = require('sharp');
 let crypto = require('crypto');
 // let upload = multer({ dest: 'uploads/' });
 
+
+// Code that gets form data from frontend and uplaod image on s3 as well ----------
 let upload = multer();
-
-// var bucket = "sociallogin-bucket";
-// var s3Client = new AWS.S3({
-//     accessKeyId: 'AKIAI4LVGH5CXBF46ABQ',
-//     secretAccessKey: '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'
-// })
-
-var bucket = "natsu-bucket";
+var bucket = "bucket-amrik";
 var s3Client = new AWS.S3({
-  accessKeyId: "AKIAIIHNMLU3IUNCY5OQ",
-  secretAccessKey: "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"
+    accessKeyId: 'AKIAJL23NLZM6CNNSAJA',
+    secretAccessKey: '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'
 });
-
-let cpUpload = upload.fields([{name:'amrik',maxCount:2}]);
-let sizes = ['thumbnail', 'small','medium'];
-
-router.post('/uploadfile99',cpUpload,(req,res)=>{
-    console.log('6666666');
-	if (!req.files) {
+router.post('/uploadimage22',upload.single('image'),(req,res)=>{
+    console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+    console.log(req.body.name); // req.body has the form data
+    if (!req.file) {
 	//   console.log("No file received");
 	  return res.send({success: false});
-  
-	} else {
 
-        console.log(req.files,'99999');
-        let userId = "121212121dfdfd";
-        req.files.amrik.forEach((item)=>{
+	} else {
+        // console.log(req.file,'99999');
+        let userId = "53436546ff534a4234";
+        let imageid = getRandomName(userId);
             s3Client.putObject({
                 Bucket: bucket,
-                Key: getRandomName(userId),
+                Key: imageid,
                 ACL: 'public-read',
-                Body: item,
+                Body: req.file.buffer,
                 ContentType: 'image/png',
             }, function(err, data) {
                 if (err) {
                     console.log('Error while uploading to S3');
-                    return res.status(400).json({ error : 'Error in uploaded' });
+                    console.log(err);
+                    return res.status(400).json({ error : 'Error in upload' });
                 }
                 else{
-                    console.log("uploaded");
-                    return res.status(200).json({ success : 'Image uploaded' });
+                    let imageUrl = `https://s3.ap-south-1.amazonaws.com/bucket-amrik/${imageid}`;
+
+                    return res.status(200).json({ imageUrl: imageUrl , success : 'Image uploaded' });
                 }
             })
-        })
         function getRandomName(originalName) {
             return crypto.randomBytes(16).toString('hex') + originalName;
           }
-        //
-
-        // return res.status(200).json({ success : 'File received.' })
-
 	}
-});
+})
+// Code ends that gets form data from frontend and uplaod image on s3 as well ----------
 
+
+
+
+// final image upload code --------
+// let upload = multer();
+// var bucket = "bucket-amrik";
+// var s3Client = new AWS.S3({
+//     accessKeyId: 'AKIAJL23NLZM6CNNSAJA',
+//     secretAccessKey: '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'
+// });
+// router.post('/uploadfile99',upload.single('amrik'),(req,res)=>{
+//     console.log('6666666');
+// 	if (!req.file) {
+// 	//   console.log("No file received");
+// 	  return res.send({success: false});
+  
+// 	} else {
+//         console.log(req.file,'99999');
+//         let userId = "53436546ff534a4234";
+//         let imageid = getRandomName(userId);
+//             s3Client.putObject({
+//                 Bucket: bucket,
+//                 Key: imageid,
+//                 ACL: 'public-read',
+//                 Body: req.file.buffer,
+//                 ContentType: 'image/png',
+//             }, function(err, data) {
+//                 if (err) {
+//                     console.log('Error while uploading to S3');
+//                     console.log(err);
+//                     return res.status(400).json({ error : 'Error in uploaded' });
+//                 }
+//                 else{
+//                     let imageUrl = `https://s3.ap-south-1.amazonaws.com/bucket-amrik/${imageid}`;
+
+//                     return res.status(200).json({ imageUrl: imageUrl , success : 'Image uploaded' });
+//                 }
+//             })
+//         function getRandomName(originalName) {
+//             return crypto.randomBytes(16).toString('hex') + originalName;
+//           }
+// 	}
+// });
+// final image upload code end --------
 
 
 router.post('/fileupload',users_controller.uploadImage);
 
 
 // ram's code
-// let storage = multer.diskStorage({
-//     destination: function(req, file, cb){
-//         cb(null, './images_uploaded')
-//     },
-//     filename: function(req, file, cb){
-//         cb(null, file.fieldname + '-'+ Date.now());
-//     }
-// })
+let storage = multer.diskStorage({
+    destination: function(req, file, cb){
+        cb(null, './images_uploaded')
+    },
+    filename: function(req, file, cb){
+        cb(null, file.fieldname + '-'+ Date.now());
+    }
+})
 
-// //let upload = multer({storage: storage});
-// const fs = require('fs');
+//let upload = multer({storage: storage});
+const fs = require('fs');
 
-// var bucket = "sociallogin-bucket";
+// var bucket = "bucket-amrik";
 // var s3Client = new AWS.S3({
-//     accessKeyId: 'AKIAI4LVGH5CXBF46ABQ',
-//     secretAccessKey: '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'
+//     accessKeyId: 'AKIAJL23NLZM6CNNSAJA',
+//     secretAccessKey: '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'
 // })
 
-// router.post('/upload', upload.single('image'), (req, res)=>{
-//     // let loggedInUser = req.user._id;
-//     console.log(req.file,'222222222');
-//     if(!req.file){
-//         // console.log("No file received");
-//         res.status(400).json({ error : 'No file received.' })
-//     }
-//     else{
-//         // console.log("File received");
-//         let pathname = 
-//         s3Client.putObject({
-//             Bucket: bucket,
-//             Key: req.file.filename,
-//             ACL: 'public-read',
-//             Body: fs.readFileSync(req.file.path),
-//             ContentLength: req.file.size,
-//             ContentType: req.file.mimetype,
-//         }, function(err, data){
-//             if (err) {
-//                 return res.json({error: "Error while uploading image."});
-//             }
-//             let imageUrl = "https://s3.ap-south-1.amazonaws.com/"+bucket+"/"+req.file.filename;
-//             // console.log("image url", imageUrl);
-//             // let imageObj = { image : imageUrl };
-//             // User.findByIdAndUpdate( loggedInUser, imageObj ).then(
-//             //     uploaded=>{
-//             //         return res.json({success: 'Image uploaded successfully', data: imageUrl });        
-//             //     }
-//             // )
-//             return res.json({success: 'Image uploaded successfully', data: imageUrl });
-//         })
-//     }
-// });
+router.post('/upload', upload.single('image'), (req, res)=>{
+    // let loggedInUser = req.user._id;
+    console.log(req.file,'222222222');
+    if(!req.file){
+        // console.log("No file received");
+        res.status(400).json({ error : 'No file received.' })
+    }
+    else{
+        // console.log("File received");
+        let pathname = 
+        s3Client.putObject({
+            Bucket: bucket,
+            Key: req.file.filename,
+            ACL: 'public-read',
+            Body: fs.readFileSync(req.file.path),
+            ContentLength: req.file.size,
+            ContentType: req.file.mimetype,
+        }, function(err, data){
+            if (err) {
+                return res.json({error: "Error while uploading image."});
+            }
+            let imageUrl = "https://s3.ap-south-1.amazonaws.com/"+bucket+"/"+req.file.filename;
+            // console.log("image url", imageUrl);
+            // let imageObj = { image : imageUrl };
+            // User.findByIdAndUpdate( loggedInUser, imageObj ).then(
+            //     uploaded=>{
+            //         return res.json({success: 'Image uploaded successfully', data: imageUrl });        
+            //     }
+            // )
+            return res.json({success: 'Image uploaded successfully', data: imageUrl });
+        })
+    }
+});
 
-// router.get('/upload', function(req, res, next){
-//     console.log("helllllll");
-// })
+router.get('/upload', function(req, res, next){
+    console.log("helllllll");
+})
 // ram's code end
 
 
