@@ -190,7 +190,15 @@ router.post('/signup',(req,res)=>{
     let name = req.body.name;
     let email = req.body.email;
     let password = req.body.password;
-
+    if(!name){
+        return res.status(400).json({error : "Name cannot be blank"});
+    }
+    if(!email){
+        return res.status(400).json({error : "Email cannot be blank"});
+    }
+    if(!password){
+        return res.status(400).json({error : "Password cannot be blank"});
+    }
     User.findOne({email : email}).then(
         (user) => {
             if(user){
@@ -218,7 +226,7 @@ router.post('/signup',(req,res)=>{
             activation : activationNumber
         });
         newUser.save().then(()=>{
-        let link = `http://localhost:3000/verify?id=${activationNumber}&email=${email}`;
+        let link = `http://localhost:3000/verify?activationnumber=${activationNumber}&email=${email}`;
         // let link = `https://stormy-ravine-20860.herokuapp.com/verify?id=${activationNumber}&email=${email}`;
 
         //  NodeMailer : To send email
@@ -254,25 +262,28 @@ router.post('/signup',(req,res)=>{
 router.get('/verify',(req,res)=>{
     //console.log(req.query);
     let email = req.query.email;
-    let activationNumber = req.query.id;
-    User.findOne({ $and : [{email : email, activation : activationNumber }] }).then(
-        user=>{
-            User.findOneAndUpdate({ email : email },{ $set : { isverified : true } }).then(
-                verfied=>{
-                    if(verfied){
-                        let link = 'http://localhost:3000';
-                        // let link = 'https://stormy-ravine-20860.herokuapp.com/';
-                        return res.status(200).send('Account verfied...Now you can login to your account.');
-                    }
-                    else{
-                        return res.status(404).json({ error : 'Error in account verification.' })
-                    }
-                }
-            ).catch((err) => {
-                console.error("Error occured in account verification ",+err);
-            })
+    let activationNumber = req.query.activationnumber;
+    if(!email){
+        return res.status(400).json({error : "Email cannot be blank"});
+    }
+    if(!activationNumber){
+        return res.status(400).json({error : "Activation number cannot be blank"});
+    }
+
+    User.findOneAndUpdate({ email : email, activation : activationNumber },{ $set : { isverified : true } }).then(
+        verfied=>{
+            if(verfied){
+                let link = 'http://localhost:3000';
+                // let link = 'https://stormy-ravine-20860.herokuapp.com/';
+                return res.status(200).send('Account verfied...Now you can login to your account.');
+            }
+            else{
+                return res.status(404).json({ error : 'Error in account verification.' })
+            }
         }
-    ).catch()
+    ).catch((err) => {
+        console.error("Error occured in account verification ",+err);
+    })
 });
 
 router.post('/signin',(req,res)=>{

@@ -1,0 +1,168 @@
+{
+    "swagger" : "2.0",
+    "title" : "Social-login api documentation",
+    "description" : "Social login with Google,Facebook and local site",
+    "license" : {
+        "name" : "MIT",
+        "url" : "https://opensource.org/licenses/MIT"
+    },
+    "version" : "1.0.0",
+    "host" : "localhost:3000",
+    "basePath" : "/",
+    "tags" : [
+        {
+            "name" : "Social login",
+            "description" : "APIs for social login(Google,Facebook and local site)"
+        }
+    ],
+    "schemes" : ["http"],
+    "consumes" : ["application/json"],
+    "produces" : ["application/json"],
+    "paths" : {
+        "/signup" : {
+            "post" : {
+                "tags" : ["Social login"],
+                "summary" : "Api endpoint to create new user",
+                "description" : "Creates new user in database",
+                "parameters" : [
+                    {
+                        "name" : "signup",
+                        "description" : "User params to create new user",
+                        "in" : "body",
+                        "required" : "true",
+                        "schema" : {
+                            "$ref" : "#definitions/User"
+                        }
+                    }
+                ],
+                "produces" : ["application/json"],
+                "responses" : {
+                    "200" : {
+                        "description" : "New user created",
+                        "schema" : {
+                            "$ref" : "#definitions/User"
+                        }
+                    }
+                }
+            }
+        },
+        "/verify" : {
+            "get" : {
+                "tags" : ["Social login"],
+                "summary" : "Api endpoint to verify new user account",
+                "description" : "Verifies the new user account from email",
+                "parameters" : [
+                    {
+                        "name" : "email",
+                        "type" : "string",
+                        "description" : "Defines the user email which is to be verified",
+                        "in" : "query"
+                    },
+                    {
+                        "name" : "activationnumber",
+                        "type" : "integer",
+                        "description" : "Defines the activation number in database attached to email",
+                        "in" : "query"
+                    }
+                ],
+                "produces" : ["application/json"],
+                "responses" : {
+                    "200" : {
+                        "description" : "Account verfied...Now you can login to your account",
+                        "schema" : {
+                            "$ref" : "#definitions/Verify"
+                        }
+                    }
+                }
+            }
+        },
+        "/signin" : {
+            "post" : {
+                "tags" : ["Social login"],
+                "summary" : "Api endpoint to signin a existing user",
+                "description" : "Verifies the credentials and sign the user in",
+                "parameters" : [
+                    {
+                        "name" : "signup",
+                        "description" : "User params to signin a existing user",
+                        "in" : "body",
+                        "required" : "true",
+                        "schema" : {
+                            "$ref" : "#definitions/Signin"
+                        }
+                    }
+                ],
+                "produces" : ["application/json"],
+                "responses" : {
+                    "200" : {
+                        "description" : "Signin successfully",
+                        "schema" : {
+                            "$ref" : "#definitions/Signin"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions" : {
+        "User" : {
+            "required" : ["name","email","password"],
+            "properties" : {
+                "_id" : {
+                    "type" : "string"
+                },
+                "name" : {
+                    "type" : "string",
+                    "trim" : "true"
+                },
+                "email" : {
+                    "type" : "string",
+                    "unique" : "true",
+                    "lowercase" : "true",
+                    "index" : "true"
+                },
+                "password" : {
+                    "type" : "string"
+                },
+                "image" : {
+                    "type" : "string",
+                    "default" : "http://conferenceoeh.com/wp-content/uploads/profile-pic-dummy.png"
+                },
+                "provider" : {
+                    "type" : "string",
+                    "default" : "airtime"
+                },
+                "activation" : {
+                    "type" : "number",
+                    "default" : 0
+                },
+                "isverified" : {
+                    "type" : "boolean",
+                    "default" : false
+                }
+            }
+        },
+        "Verify" : {
+            "required" : ["email","activationnumber"],
+            "properties" : {
+                "email" : {
+                    "type" : "string"
+                },
+                "activationnumber" : {
+                    "type" : "integer"
+                }
+            }
+        },
+        "Signin" : {
+            "required" : ["email","password"],
+            "properties" : {
+                "email" : {
+                    "type" : "string"
+                },
+                "password" : {
+                    "type" : "string"
+                }
+            }
+        }
+    }
+}
