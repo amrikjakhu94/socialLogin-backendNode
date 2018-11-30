@@ -31,7 +31,7 @@
                         "in" : "body",
                         "required" : "true",
                         "schema" : {
-                            "$ref" : "#definitions/User"
+                            "$ref" : "#definitions/Signup"
                         }
                     }
                 ],
@@ -40,8 +40,11 @@
                     "200" : {
                         "description" : "New user created",
                         "schema" : {
-                            "$ref" : "#definitions/User"
+                            "$ref" : "#definitions/SignupRsp"
                         }
+                    },
+                    "400" : {
+                        "description" : "User already exists,try new email"
                     }
                 }
             }
@@ -49,7 +52,7 @@
         "/verify" : {
             "get" : {
                 "tags" : ["Social login"],
-                "summary" : "Api endpoint to verify new user account",
+                "summary" : "Api endpoint to verify new user account from link sent to user's email",
                 "description" : "Verifies the new user account from email",
                 "parameters" : [
                     {
@@ -83,7 +86,7 @@
                 "description" : "Verifies the credentials and sign the user in",
                 "parameters" : [
                     {
-                        "name" : "signup",
+                        "name" : "signin",
                         "description" : "User params to signin a existing user",
                         "in" : "body",
                         "required" : "true",
@@ -95,9 +98,61 @@
                 "produces" : ["application/json"],
                 "responses" : {
                     "200" : {
-                        "description" : "Signin successfully",
+                        "description" : "Signin/signup successfully via google/facebook",
                         "schema" : {
-                            "$ref" : "#definitions/Signin"
+                            "$ref" : "#definitions/SigninRsp"
+                        }
+                    }
+                }
+            }
+        },
+        "/socialsignin" : {
+            "post" : {
+                "tags" : ["Social login"],
+                "summary" : "Api endpoint to signin user with google/facebook",
+                "description" : "Get data of user from google/facebook at frontend only",
+                "parameters" : [
+                    {
+                        "name" : "socialsignin",
+                        "description" : "User params to signin/signup a user of google/facebook",
+                        "in" : "body",
+                        "required" : "true",
+                        "schema" : {
+                            "$ref" : "#definitions/Socailsignin"
+                        }
+                    }
+                ],
+                "produces" : ["application/json"],
+                "responses" : {
+                    "200" : {
+                        "description" : "Signin/signup successfully",
+                        "schema" : {
+                            "$ref" : "#definitions/SocailsigninRsp"
+                        }
+                    }
+                }
+            }
+        },
+        "/myprofile" : {
+            "get" : {
+                "tags" : ["Social login"],
+                "summary" : "Api endpoint to get a user profile from database",
+                "description" : "Api to get user profile data",
+                "parameters" : [
+                    {
+                        "name" : "auth",
+                        "type" : "string",
+                        "description" : "Defines the jwt token required to get user profile",
+                        "in" : "header",
+                        "required" : "true"
+                    }
+                ],
+                "produces" : ["application/json"],
+                "responses" : {
+                    "200" : {
+                        "description" : "Gives user profile data",
+                        "schema" : {
+                            "$ref" : "#definitions/User"
                         }
                     }
                 }
@@ -106,11 +161,32 @@
     },
     "definitions" : {
         "User" : {
-            "required" : ["name","email","password"],
             "properties" : {
-                "_id" : {
+                "id" : {
                     "type" : "string"
                 },
+                "name" : {
+                    "type" : "string"
+                },
+                "email" : {
+                    "type" : "string"
+                },
+                "image" : {
+                    "type" : "string"
+                },
+                "provider" : {
+                    "type" : "string",
+                    "default" : "airtime"
+                },
+                "isverified" : {
+                    "type" : "boolean",
+                    "default" : "false"
+                }
+            }
+        },
+        "Signup" : {
+            "required" : ["name","email","password"],
+            "properties" : {
                 "name" : {
                     "type" : "string",
                     "trim" : "true"
@@ -123,6 +199,25 @@
                 },
                 "password" : {
                     "type" : "string"
+                }
+            }
+        },
+        "SignupRsp" : {
+            "properties" : {
+                "_id" : {
+                    "type" : "string"
+                },
+                "name" : {
+                    "type" : "string"
+                },
+                "email" : {
+                    "type" : "string"
+                },
+                "salt" : {
+                    "type" : "string"
+                },
+                "hash" : {
+                    "type" : "string"
                 },
                 "image" : {
                     "type" : "string",
@@ -133,8 +228,7 @@
                     "default" : "airtime"
                 },
                 "activation" : {
-                    "type" : "number",
-                    "default" : 0
+                    "type" : "number"
                 },
                 "isverified" : {
                     "type" : "boolean",
@@ -153,6 +247,13 @@
                 }
             }
         },
+        "VerifyRsp" : {
+            "properties" : {
+                "message" : {
+                    "type" : "string"
+                }
+            }
+        },
         "Signin" : {
             "required" : ["email","password"],
             "properties" : {
@@ -160,6 +261,49 @@
                     "type" : "string"
                 },
                 "password" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "SigninRsp" : {
+            "properties" : {
+                "user" : {
+                    "type" : "object"
+                },
+                "token" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "Socailsignin" : {
+            "required" : ["id","name","email","image","provider","token"],
+            "properties" : {
+                "id" : {
+                    "type" : "string"
+                },
+                "name" : {
+                    "type" : "string"
+                },
+                "email" : {
+                    "type" : "string"
+                },
+                "image" : {
+                    "type" : "string"
+                },
+                "provider" : {
+                    "type" : "string"
+                },
+                "token" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "SocailsigninRsp" : {
+            "properties" : {
+                "user" : {
+                    "type" : "object"
+                },
+                "token" : {
                     "type" : "string"
                 }
             }
