@@ -200,9 +200,6 @@ router.post('/signup',(req,res)=>{
     if(!password){
         return res.status(400).json({error : "Password cannot be blank"});
     }
-    if(password != confirmpassword){
-        return res.status(400).json({error : "Passwords do not match"});
-    }
     User.findOne({email : email}).then(
         (user) => {
             if(user){
