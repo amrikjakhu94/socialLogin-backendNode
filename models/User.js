@@ -3,6 +3,10 @@ const Schema = mongoose.Schema;
 let jwt = require('jsonwebtoken');
 
 const userSchema = Schema({
+    socialId : {
+        type : String,
+        default : '0'
+    },
     name : {
         type : String,
         trim : true

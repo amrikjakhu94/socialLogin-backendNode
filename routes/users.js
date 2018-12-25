@@ -11,6 +11,7 @@ let multer = require('multer');
 let users_controller = require('./users-controller');
 let sharp = require('sharp');
 let crypto = require('crypto');
+let request = require('request');
 // let upload = multer({ dest: 'uploads/' });
 
 
@@ -356,32 +357,84 @@ router.post('/signin',(req,res)=>{
 });
 
 router.post('/socialsignin',(req,res)=>{
+    let id = req.body.id;
     let name = req.body.name;
     let email = req.body.email;
     let image = req.body.image;
     let provider = req.body.provider;
+    let token = req.body.token;
+    console.log(token,'----');
+    if(!name){
+        return res.status(422).json({ error : 'Name cannot be blank.' });
+    }
     if(!email){
         return res.status(422).json({ error : 'Email cannot be blank.' });
     }
+    if(!provider){
+        return res.status(422).json({ error : 'Provider cannot be blank.' });
+    }
+    if(!token){
+        return res.status(422).json({ error : 'Token cannot be blank.' });
+    }
     else{
-        User.findOne({ email : email }).then(
-            (user)=>{
-                if(user){
-                    const token = user.generateAuthToken();
-                    return res.header('x-auth-token',token).json({ user : user, token : token });
+        if(provider == 'google'){
+            let verifyGoogleUser = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token='+token;
+            request(verifyGoogleUser,function(error,response,body){
+                if(response && response.statusCode === 200 ){
+                    let info = JSON.parse(body);
+                    User.findOne({ socialId : id, email : email }).then(
+                        (user)=>{
+                            if(user){
+                                const token = user.generateAuthToken();
+                                return res.header('x-auth-token',token).json({ user : user, token : token });        
+                            }
+                            else{
+                                createNewUser();
+                            }
+                        }
+                    ).catch((err) => {
+                        console.error("Error occured ",+err);
+                    });
                 }
                 else{
-                    createNewUser();
+                    return res.status(401).json({message : 'You are not a authorized google user'});
                 }
-            }
-        ).catch((err) => {
-            console.error("Error occured ",+err);
-        })
+                // console.log('body: ', body);
+                // console.log('error:', error);
+                // console.log('statusCode:', response && response.statusCode);
+            });
+        }
+        if(provider == 'facebook'){
+            let verifyFacebookUser = 'https://graph.facebook.com/me?access_token='+token;
+            request(verifyFacebookUser,function(error,response,body){
+                let info = JSON.parse(body);
+                console.log(info,'-----');
+                if(info.id == id){
+                    User.findOne({ socialId : id, email : email }).then(
+                        (user)=>{
+                            if(user){
+                                const token = user.generateAuthToken();
+                                return res.header('x-auth-token',token).json({ user : user, token : token });        
+                            }
+                            else{
+                                createNewUser();
+                            }
+                        }
+                    ).catch((err) => {
+                        console.error("Error occured ",+err);
+                    });
+                }
+                else{
+                    return res.status(401).json({message : 'You are not a authorized facebook user'});
+                }
+            });
+        }
     }
 
     async function createNewUser() {
 
         const newUser = new User({
+            socialId : id,
             name : name,
             email : email,
             image : image,
